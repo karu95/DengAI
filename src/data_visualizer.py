@@ -13,7 +13,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn import preprocessing
 
 # First XGBoost model for Pima Indians dataset
-from xgboost import XGBClassifier
+from xgboost import XGBRegressor
 from sklearn.metrics import accuracy_score
 
 
@@ -25,7 +25,7 @@ def preprocess_data(data_path, labels_path=None):
     features = ['reanalysis_specific_humidity_g_per_kg',
                 'reanalysis_dew_point_temp_k',
                 'station_avg_temp_c',
-                'station_min_temp_c', 'ndvi_se']
+                'station_min_temp_c', 'reanalysis_tdtr_k', 'ndvi_se']
 
     dataset = train_features[features]
 
@@ -114,11 +114,12 @@ def xg_boost_Algorithm_model(X_train, y_train, X_test, y_test):
     # y_pred = gbm.predict(X_test)
 
     # fit model no training data
-    xgb_model = XGBClassifier(objective ='reg:logistic', colsample_bytree = 0.3, learning_rate = 0.1,
-                max_depth = 5, reg_alpha = 10, n_estimators = 100)
+    xgb_model = XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.0005,
+                max_depth = 4, eval_metric='mae', reg_alpha = 10, n_estimators = 1000)
     xgb_model.fit(X_train, y_train)
     # make predictions for test data
-    y_pred = xgb_model.predict(X_test)
+    y_pred = xgb_model.predict(X_test).astype('int32')
+    # print(y_pred)
     # evaluate predictions
     mae = mean_absolute_error(y_test, y_pred)
     print("M.A.E: %.2f%%" % (mae))
@@ -138,9 +139,9 @@ sj_train_subtrain_X, sj_train_subtrain_Y = sj_train_subtrain.iloc[:,:-1], sj_tra
 sj_train_subtest_X, sj_train_subtest_Y = sj_train_subtest.iloc[:,:-1], sj_train_subtest.iloc[:,-1]
 
 sj_best_model = xg_boost_Algorithm_model(sj_train_subtrain_X, sj_train_subtrain_Y, sj_train_subtest_X, sj_train_subtest_Y)
-xgb.plot_importance(sj_best_model, height=0.9)
-plt.rcParams['figure.figsize'] = [5, 5]
-plt.show()
+# xgb.plot_importance(sj_best_model, height=0.9)
+# plt.rcParams['figure.figsize'] = [5, 5]
+# plt.show()
 
 # sj_best_model_gradient = gradient_boosting_algorithm(sj_train_subtrain_X, sj_train_subtrain_Y, sj_train_subtest_X, sj_train_subtest_Y)
 
@@ -153,15 +154,15 @@ iq_train_subtest_X, iq_train_subtest_Y = iq_train_subtest.iloc[:,:-1], iq_train_
 
 iq_best_model = xg_boost_Algorithm_model(iq_train_subtrain_X, iq_train_subtrain_Y, iq_train_subtest_X, iq_train_subtest_Y)
 # iq_best_model_gradient = gradient_boosting_algorithm(iq_train_subtrain_X, iq_train_subtrain_Y, iq_train_subtest_X, iq_train_subtest_Y)
-xgb.plot_importance(iq_best_model, height=0.9)
-plt.rcParams['figure.figsize'] = [5, 5]
-plt.show()
+# xgb.plot_importance(iq_best_model, height=0.9)
+# plt.rcParams['figure.figsize'] = [5, 5]
+# plt.show()
 
 
 sj_test, iq_test = preprocess_data('/home/karu/PycharmProjects/DengAI/data/dengue_features_test.csv')
 
-sj_predictions = sj_best_model.predict(sj_test)
-iq_predictions = iq_best_model.predict(iq_test)
+sj_predictions = sj_best_model.predict(sj_test).astype('int32')
+iq_predictions = iq_best_model.predict(iq_test).astype('int32')
 
 # sj_predictions_gradient = sj_best_model_gradient.predict(sj_test.as_matrix()).astype(int)
 # iq_predictions_gradient = iq_best_model_gradient.predict(iq_test.as_matrix()).astype(int)
