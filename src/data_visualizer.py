@@ -25,7 +25,7 @@ def preprocess_data(data_path, labels_path=None):
     features = ['reanalysis_specific_humidity_g_per_kg',
                 'reanalysis_dew_point_temp_k',
                 'station_avg_temp_c',
-                'station_min_temp_c', 'reanalysis_tdtr_k', 'ndvi_se']
+                'station_min_temp_c', 'ndvi_se']
 
     dataset = train_features[features]
 
@@ -114,8 +114,8 @@ def xg_boost_Algorithm_model(X_train, y_train, X_test, y_test):
     # y_pred = gbm.predict(X_test)
 
     # fit model no training data
-    xgb_model = XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.0005,
-                max_depth = 4, eval_metric='mae', reg_alpha = 10, n_estimators = 1000)
+    xgb_model = XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.4, learning_rate = 0.0007,
+                max_depth = 3, eval_metric='mae', subsample=0.8, n_estimators = 1500, gamma=1)
     xgb_model.fit(X_train, y_train)
     # make predictions for test data
     y_pred = xgb_model.predict(X_test).astype('int32')
